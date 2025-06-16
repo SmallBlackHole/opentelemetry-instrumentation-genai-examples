@@ -28,9 +28,6 @@ from azure.ai.agents.models import (
     ListSortOrder,
 )
 from azure.ai.agents.telemetry import trace_function
-from azure.ai.agents.telemetry import AIAgentsInstrumentor
-
-tracer = trace.get_tracer(__name__)
 
 scenario = os.path.basename(__file__)
 tracer = trace.get_tracer(__name__)

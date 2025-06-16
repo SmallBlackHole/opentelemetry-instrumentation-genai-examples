@@ -1,13 +1,20 @@
-import openai
-import logfire
-import os
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
-os.environ["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"] = "http://localhost:4318/v1/traces"
-logfire.configure(
-    service_name="test_openai_logfire",
-    send_to_logfire=False,
+provider = TracerProvider()
+otlp_exporter = OTLPSpanExporter(
+    endpoint="http://localhost:4318/v1/traces",
 )
-logfire.instrument_openai()
+processor = BatchSpanProcessor(otlp_exporter)
+provider.add_span_processor(processor)
+trace.set_tracer_provider(provider)
+
+from opentelemetry.instrumentation.openai_v2 import OpenAIInstrumentor
+OpenAIInstrumentor().instrument()
+
+import openai
 
 client = openai.Client()
 
