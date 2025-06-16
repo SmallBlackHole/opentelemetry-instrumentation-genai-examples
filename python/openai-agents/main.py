@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import asyncio
 import os
 
-### Set up for tracing ###
+### Set up for OpenTelemetry tracing ###
 import logfire
 os.environ["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"] = "http://localhost:4318/v1/traces"
 logfire.configure(
@@ -11,7 +11,7 @@ logfire.configure(
     send_to_logfire=False,
 )
 logfire.instrument_openai_agents()
-### Set up for tracing ###
+### Set up for OpenTelemetry tracing ###
 
 from agents import set_default_openai_key
 set_default_openai_key(os.environ["OPENAI_API_KEY"])
