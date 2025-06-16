@@ -1,15 +1,20 @@
 from agents import Agent, InputGuardrail, GuardrailFunctionOutput, Runner
 from pydantic import BaseModel
 import asyncio
-import logfire
 import os
 
+### Set up for tracing ###
+import logfire
 os.environ["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"] = "http://localhost:4318/v1/traces"
 logfire.configure(
     service_name="test_openai_agents_logfire",
     send_to_logfire=False,
 )
 logfire.instrument_openai_agents()
+### Set up for tracing ###
+
+from agents import set_default_openai_key
+set_default_openai_key(os.environ["OPENAI_API_KEY"])
 
 class HomeworkOutput(BaseModel):
     is_homework: bool
