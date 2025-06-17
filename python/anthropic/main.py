@@ -1,6 +1,7 @@
 import os
 import anthropic
 
+### Set up for OpenTelemetry tracing ###
 from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
@@ -20,6 +21,7 @@ trace.set_tracer_provider(provider)
 
 from opentelemetry.instrumentation.anthropic import AnthropicInstrumentor
 AnthropicInstrumentor().instrument()
+### Set up for OpenTelemetry tracing ###
 
 client = anthropic.Anthropic(
     api_key=os.environ["ANTHROPIC_API_KEY"],
