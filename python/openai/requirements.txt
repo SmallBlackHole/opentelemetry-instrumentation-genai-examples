@@ -1,0 +1,4 @@
+openai==1.85.0
+opentelemetry-instrumentation-openai-v2==2.1b0
+opentelemetry-sdk==1.34.1
+opentelemetry-exporter-otlp-proto-http==1.34.1

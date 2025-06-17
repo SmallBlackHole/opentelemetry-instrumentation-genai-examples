@@ -1,9 +1,14 @@
+### Set up for OpenTelemetry tracing ###
 from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
-provider = TracerProvider()
+resource = Resource(attributes={
+    "service.name": "opentelemetry-instrumentation-openai"
+})
+provider = TracerProvider(resource=resource)
 otlp_exporter = OTLPSpanExporter(
     endpoint="http://localhost:4318/v1/traces",
 )
@@ -13,10 +18,14 @@ trace.set_tracer_provider(provider)
 
 from opentelemetry.instrumentation.openai_v2 import OpenAIInstrumentor
 OpenAIInstrumentor().instrument()
+### Set up for OpenTelemetry tracing ###
 
+import os
 import openai
 
-client = openai.Client()
+client = openai.Client(
+    api_key=os.environ["OPENAI_API_KEY"],
+)
 
 response = client.chat.completions.create(
     model='gpt-4o',
