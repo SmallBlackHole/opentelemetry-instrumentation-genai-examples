@@ -1,0 +1,4 @@
+anthropic==0.49.0
+opentelemetry-sdk==1.34.1
+opentelemetry-exporter-otlp-proto-http==1.34.1
+opentelemetry-instrumentation-anthropic==0.40.8
