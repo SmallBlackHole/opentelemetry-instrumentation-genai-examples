@@ -1,0 +1,4 @@
+opentelemetry-sdk==1.34.1
+opentelemetry-exporter-otlp-proto-http==1.34.1
+azure-ai-inference[opentelemetry]==1.0.0b9
+azure-identity==1.19.0

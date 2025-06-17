@@ -7,7 +7,7 @@ import os
 import logfire
 os.environ["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"] = "http://localhost:4318/v1/traces"
 logfire.configure(
-    service_name="test_openai_agents_logfire",
+    service_name="opentelemetry-instrumentation-openai-agents-logfire",
     send_to_logfire=False,
 )
 logfire.instrument_openai_agents()
