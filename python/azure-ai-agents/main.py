@@ -20,7 +20,7 @@ provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 
 from azure.ai.agents.telemetry import AIAgentsInstrumentor
-AIAgentsInstrumentor().instrument()
+AIAgentsInstrumentor().instrument(True)
 ### Set up for OpenTelemetry tracing ###
 
 from typing import Any, Callable, Set
@@ -71,7 +71,7 @@ with tracer.start_as_current_span(scenario):
         agents_client.enable_auto_function_calls(toolset)
 
         agent = agents_client.create_agent(
-            model="gpt-4.1",
+            model="gpt-4.1-mini",
             name="my-agent",
             instructions="You are a helpful agent",
             toolset=toolset,
