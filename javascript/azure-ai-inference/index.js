@@ -1,4 +1,6 @@
+/** Set up for OpenTelemetry tracing **/
 const { context } = require("@opentelemetry/api");
+const { resourceFromAttributes } = require("@opentelemetry/resources");
 const {
   NodeTracerProvider,
   SimpleSpanProcessor,
@@ -9,6 +11,9 @@ const exporter = new OTLPTraceExporter({
     url: "http://localhost:4318/v1/traces",
 });
 const provider = new NodeTracerProvider({
+    resource: resourceFromAttributes({
+        "service.name": "opentelemetry-instrumentation-azure-ai-inference",
+    }),
     spanProcessors: [
         new SimpleSpanProcessor(exporter)
     ],
@@ -21,6 +26,7 @@ const { createAzureSdkInstrumentation } = require("@azure/opentelemetry-instrume
 registerInstrumentations({
   instrumentations: [createAzureSdkInstrumentation()],
 });
+/** Set up for OpenTelemetry tracing **/
 
 const { AzureKeyCredential } = require("@azure/core-auth");
 const ModelClient  = require("@azure-rest/ai-inference").default;
@@ -40,7 +46,9 @@ async function main() {
             messages,
             stream: false,
         },
+        /** Set up for OpenTelemetry tracing **/
         tracingOptions: { tracingContext: context.active() },
+        /** Set up for OpenTelemetry tracing **/
     });
     console.log(response.body.choices);
 }

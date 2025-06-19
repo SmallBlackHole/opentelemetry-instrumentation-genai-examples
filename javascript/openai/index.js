@@ -1,9 +1,11 @@
+/** Set up for OpenTelemetry tracing **/
 const { initialize } = require("@traceloop/node-server-sdk");
 initialize({
-    appName: "test-openai-traceloop",
+    appName: "opentelemetry-instrumentation-openai-traceloop",
     baseUrl: "http://localhost:4318",
     disableBatch: true,
 });
+/** Set up for OpenTelemetry tracing **/
 
 const { OpenAI } = require("openai");
 

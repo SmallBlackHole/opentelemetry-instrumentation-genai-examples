@@ -1,9 +1,11 @@
+/** Set up for OpenTelemetry tracing **/
 const { initialize } = require("@traceloop/node-server-sdk");
 initialize({
-    appName: "test-anthropic-traceloop",
+    appName: "opentelemetry-instrumentation-anthropic-traceloop",
     baseUrl: "http://localhost:4318",
     disableBatch: true,
 });
+/** Set up for OpenTelemetry tracing **/
 
 const Anthropic = require("@anthropic-ai/sdk");
 
