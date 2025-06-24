@@ -24,11 +24,13 @@ import os
 import openai
 
 client = openai.Client(
-    api_key=os.environ["OPENAI_API_KEY"],
+    base_url='http://localhost:11434/v1',
+    api_key='unused'
+    # api_key=os.environ["OPENAI_API_KEY"],
 )
 
 response = client.chat.completions.create(
-    model='gpt-4o',
+    model='phi3',
     messages=[
         {'role': 'system', 'content': 'You are a helpful assistant.'},
         {'role': 'user', 'content': 'Please write me a limerick about Python logging.'},
