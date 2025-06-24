@@ -11,29 +11,38 @@ from azure.core.credentials import AzureKeyCredential
 
 # Set to 'true' for detailed traces, including chat request and response messages.
 os.environ["AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED"] = "true"
+# Optiona: only needed if you want to use Azure Monitor tracing
+# os.environ["AI_CONNECTION_STRING"] = "<YOUR_AI_CONNECTION_STRING>"  # Replace with your Application Insights connection string
 
 from azure.core.settings import settings
 settings.tracing_implementation = "opentelemetry"
 
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-resource = Resource(attributes={SERVICE_NAME: "az-ai-inference-with-tools"})
+if not os.environ.get("REMOTE_TRACING"):
+    from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+    resource = Resource(attributes={SERVICE_NAME: "az-ai-inference-with-tools"})
 
-# Setup tracing to console
-span_exporter = ConsoleSpanExporter()
-tracer_provider = TracerProvider(resource=resource)
-tracer_provider.add_span_processor(SimpleSpanProcessor(span_exporter))
-trace.set_tracer_provider(tracer_provider)
+    # Setup tracing to console
+    span_exporter = ConsoleSpanExporter()
+    tracer_provider = TracerProvider(resource=resource)
+    tracer_provider.add_span_processor(SimpleSpanProcessor(span_exporter))
+    trace.set_tracer_provider(tracer_provider)
 
-# Setup tracing to OTLP endpoint
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
-trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(otlp_exporter)
-)
+    # Setup tracing to OTLP endpoint
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(otlp_exporter)
+    )
 
-# Start instrument inferencing
-from azure.ai.inference.tracing import AIInferenceInstrumentor
-AIInferenceInstrumentor().instrument()
+    # Start instrument inferencing
+    from azure.ai.inference.tracing import AIInferenceInstrumentor
+    AIInferenceInstrumentor().instrument()
+else:
+    from azure.monitor.opentelemetry import configure_azure_monitor
+    configure_azure_monitor(connection_string=os.environ.get("AI_CONNECTION_STRING"))
+
+scenario = os.path.basename(__file__)
+tracer = trace.get_tracer(__name__)
 
 def get_temperature(city: str) -> str:
     # Adding attributes to the current span
@@ -137,7 +146,8 @@ def main():
         print("Set them before running this sample.")
         exit()
 
-    chat_completion_with_function_call(key, endpoint)
+    with tracer.start_as_current_span(scenario):
+        chat_completion_with_function_call(key, endpoint)
 
 if __name__ == "__main__":
     main()
