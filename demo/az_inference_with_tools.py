@@ -146,8 +146,8 @@ def main():
         print("Set them before running this sample.")
         exit()
 
-    with tracer.start_as_current_span(scenario):
-        chat_completion_with_function_call(key, endpoint)
+    # with tracer.start_as_current_span(scenario):
+    chat_completion_with_function_call(key, endpoint)
 
 if __name__ == "__main__":
     main()
