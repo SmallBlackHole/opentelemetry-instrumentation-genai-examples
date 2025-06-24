@@ -4,3 +4,4 @@ azure-ai-projects==1.0.0b11
 azure-identity==1.19.0
 openai==1.85.0
 opentelemetry-instrumentation-openai-v2==2.1b0
+azure-ai-inference[opentelemetry]==1.0.0b9

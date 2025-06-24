@@ -33,9 +33,9 @@ project = AIProjectClient(
     credential=DefaultAzureCredential(),
 )
 
-models = project.inference.get_azure_openai_client(api_version="2024-10-21")
-response = models.chat.completions.create(
-    model="gpt-4.1",
+client = project.inference.get_chat_completions_client()
+response = client.complete(
+    model="gpt-4.1-mini",
     messages=[
         {"role": "system", "content": "You are a helpful writing assistant"},
         {"role": "user", "content": "Write me a poem about flowers"},
