@@ -13,6 +13,7 @@ from azure.ai.agents.models import (
     FunctionTool,
     ToolSet,
     ListSortOrder,
+    BingGroundingTool
 )
 from azure.ai.agents.telemetry import trace_function
 from azure.ai.agents.telemetry import AIAgentsInstrumentor
@@ -91,8 +92,10 @@ functions = FunctionTool(functions=user_functions)
 toolset = ToolSet()
 toolset.add(functions)
 
+# conn_id = os.environ["AZURE_BING_CONNECTION_ID"]
+# bing = BingGroundingTool(connection_id=conn_id)
 
-with tracer.start_as_current_span(scenario):
+with tracer.start_as_current_span(scenario + "(built-in tools)"):
     with project_client:
         agents_client = project_client.agents
 
@@ -105,6 +108,7 @@ with tracer.start_as_current_span(scenario):
             name="my-agent",
             instructions="You are a helpful agent",
             toolset=toolset,
+            # tools=bing.definitions
         )
         print(f"Created agent, ID: {agent.id}")
 
