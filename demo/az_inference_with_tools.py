@@ -6,7 +6,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor, ConsoleSpanExporter
 
 from azure.ai.inference import ChatCompletionsClient
-from azure.ai.inference.models import SystemMessage, UserMessage, CompletionsFinishReason
+from azure.ai.inference.models import SystemMessage, UserMessage, CompletionsFinishReason, ImageContentItem, TextContentItem, ImageUrl, ImageDetailLevel
 from azure.core.credentials import AzureKeyCredential
 
 # Set to 'true' for detailed traces, including chat request and response messages.
@@ -17,7 +17,7 @@ os.environ["AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED"] = "true"
 from azure.core.settings import settings
 settings.tracing_implementation = "opentelemetry"
 
-if not os.environ.get("REMOTE_TRACING"):
+if os.environ.get("REMOTE_TRACING") == "local":
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     resource = Resource(attributes={SERVICE_NAME: "az-ai-inference-with-tools"})
 
@@ -37,9 +37,28 @@ if not os.environ.get("REMOTE_TRACING"):
     # Start instrument inferencing
     from azure.ai.inference.tracing import AIInferenceInstrumentor
     AIInferenceInstrumentor().instrument()
-else:
+elif os.environ.get("REMOTE_TRACING") == "langsmith":
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import (
+        BatchSpanProcessor,
+    )
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+    otlp_exporter = OTLPSpanExporter(
+        timeout=10,
+    )
+    trace.set_tracer_provider(TracerProvider())
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(otlp_exporter)
+    )
+    # Start instrument inferencing
+    from azure.ai.inference.tracing import AIInferenceInstrumentor
+    AIInferenceInstrumentor().instrument()
+elif os.environ.get("REMOTE_TRACING") == "azure":
     from azure.monitor.opentelemetry import configure_azure_monitor
     configure_azure_monitor(connection_string=os.environ.get("AI_CONNECTION_STRING"))
+else:
+    raise ValueError("Invalid value for REMOTE_TRACING. Use 'local', 'langsmith', or 'azure'.")
 
 scenario = os.path.basename(__file__)
 tracer = trace.get_tracer(__name__)
@@ -111,7 +130,18 @@ def chat_completion_with_function_call(key, endpoint):
     client = ChatCompletionsClient(endpoint=endpoint, credential=AzureKeyCredential(key), model="gpt-4.1")
     messages = [
         SystemMessage("You are a helpful assistant."),
-        UserMessage("What is the weather and temperature in Seattle?"),
+        UserMessage("What is the weather in Seattle?"),
+        # UserMessage([
+        #         ImageContentItem(
+        #             image_url=ImageUrl.load(
+        #                 image_file="vsc.png",
+        #                 image_format="png",
+        #                 detail=ImageDetailLevel.HIGH,
+        #             ),
+        #         ),
+        #     ]
+        # ),
+        # UserMessage("Explain this image"),
     ]
 
     response = client.complete(messages=messages, tools=[weather_description, temperature_in_city], model="gpt-4.1")
@@ -146,8 +176,8 @@ def main():
         print("Set them before running this sample.")
         exit()
 
-    # with tracer.start_as_current_span(scenario):
-    chat_completion_with_function_call(key, endpoint)
+    with tracer.start_as_current_span(scenario + " (image)"):
+        chat_completion_with_function_call(key, endpoint)
 
 if __name__ == "__main__":
     main()
