@@ -8,7 +8,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
 resource = Resource(attributes={
-    "service.name": "opentelemetry-instrumentation-google-genai"
+    "service.name": "opentelemetry-instrumentation-google-genai-openinference"
 })
 provider = TracerProvider(resource=resource)
 otlp_exporter = OTLPSpanExporter(
@@ -18,8 +18,8 @@ processor = BatchSpanProcessor(otlp_exporter)
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 
-from opentelemetry.instrumentation.google_genai import GoogleGenAiSdkInstrumentor
-GoogleGenAiSdkInstrumentor().instrument()
+from openinference.instrumentation.google_genai import GoogleGenAIInstrumentor
+GoogleGenAIInstrumentor().instrument()
 ### Set up for OpenTelemetry tracing ###
 
 from google.genai import Client
