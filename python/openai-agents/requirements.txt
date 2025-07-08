@@ -1,3 +1,4 @@
 openai-agents==0.0.17
 logfire==3.18.0
 pydantic==2.11.3
+openinference-instrumentation-openai-agents==1.0.0
