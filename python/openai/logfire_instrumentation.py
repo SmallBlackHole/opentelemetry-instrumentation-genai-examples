@@ -9,10 +9,10 @@ logfire.configure(
 )
 logfire.instrument_openai()
 
-client = openai.Client()
+client = openai.Client(base_url="http://localhost:11434/v1", api_key="unused")
 
 response = client.chat.completions.create(
-    model='gpt-4o',
+    model='phi3',
     messages=[
         {'role': 'system', 'content': 'You are a helpful assistant.'},
         {'role': 'user', 'content': 'Please write me a limerick about Python logging.'},

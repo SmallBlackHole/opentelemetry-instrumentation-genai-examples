@@ -6,6 +6,7 @@ import os
 ### Set up for OpenTelemetry tracing ###
 import logfire
 os.environ["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"] = "http://localhost:4318/v1/traces"
+# os.environ["OPENAI_API_KEY"] = "unused"  # Set a dummy key since we're using a local server
 logfire.configure(
     service_name="opentelemetry-instrumentation-openai-agents-logfire",
     send_to_logfire=False,
@@ -13,29 +14,41 @@ logfire.configure(
 logfire.instrument_openai_agents()
 ### Set up for OpenTelemetry tracing ###
 
-from agents import set_default_openai_key
-set_default_openai_key(os.environ["OPENAI_API_KEY"])
+from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI
+
+
+# from agents import set_default_openai_key
+# set_default_openai_key(os.environ["OPENAI_API_KEY"])
 
 class HomeworkOutput(BaseModel):
     is_homework: bool
     reasoning: str
 
+# Configure the model
+model = OpenAIChatCompletionsModel( 
+    model="qwen3",
+    openai_client=AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="unused")
+)
+
 guardrail_agent = Agent(
     name="Guardrail check",
     instructions="Check if the user is asking about homework.",
     output_type=HomeworkOutput,
+    model=model,
 )
 
 math_tutor_agent = Agent(
     name="Math Tutor",
     handoff_description="Specialist agent for math questions",
     instructions="You provide help with math problems. Explain your reasoning at each step and include examples",
+    model=model,
 )
 
 history_tutor_agent = Agent(
     name="History Tutor",
     handoff_description="Specialist agent for historical questions",
     instructions="You provide assistance with historical queries. Explain important events and context clearly.",
+    model=model,
 )
 
 
@@ -54,6 +67,7 @@ triage_agent = Agent(
     input_guardrails=[
         InputGuardrail(guardrail_function=homework_guardrail),
     ],
+    model=model,
 )
 
 async def main():

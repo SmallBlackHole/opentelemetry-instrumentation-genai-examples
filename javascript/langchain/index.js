@@ -10,7 +10,7 @@ initialize({
 const { ChatOpenAI } = require("@langchain/openai");
 
 async function main() {
-    const llm = new ChatOpenAI({ model: "gpt-4o-mini", temperature: 0 });
+    const llm = new ChatOpenAI({ model: "phi3", temperature: 0, configuration: { baseURL: "http://localhost:11434/v1" }, openAIApiKey: "unused" });
     const aiMsg = await llm.invoke([
     {
         role: "system",

@@ -39,7 +39,7 @@ scenario = os.path.basename(__file__)
 tracer = trace.get_tracer(__name__)
 
 project_client = AIProjectClient(
-    endpoint=os.environ["AZURE_AI_FOUNDRY_PROJECT_ENDPOINT"],
+    endpoint=os.environ["PROJECT_ENDPOINT"],
     credential=DefaultAzureCredential(),
 )
 

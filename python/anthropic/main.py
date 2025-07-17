@@ -19,18 +19,23 @@ processor = BatchSpanProcessor(otlp_exporter)
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 
+# from azure.monitor.opentelemetry import configure_azure_monitor
+# configure_azure_monitor(connection_string=os.environ.get("AI_CONNECTION_STRING"))
+
 from opentelemetry.instrumentation.anthropic import AnthropicInstrumentor
 AnthropicInstrumentor().instrument()
 ### Set up for OpenTelemetry tracing ###
 
-client = anthropic.Anthropic(
-    api_key=os.environ["ANTHROPIC_API_KEY"],
-)
+name = "anthropic (python, traceloop)"
+with trace.get_tracer(name).start_as_current_span(name):
+    client = anthropic.Anthropic(
+        api_key=os.environ["ANTHROPIC_API_KEY"],
+    )
 
-response = client.messages.create(
-    max_tokens=1000,
-    model='claude-3-haiku-20240307',
-    system='You are a helpful assistant.',
-    messages=[{'role': 'user', 'content': 'Please write me a limerick about Python logging.'}],
-)
-print(response.content[0].text)
+    response = client.messages.create(
+        max_tokens=1000,
+        model='claude-3-haiku-20240307',
+        system='You are a helpful assistant.',
+        messages=[{'role': 'user', 'content': 'Please write me a limerick about Python logging.'}],
+    )
+    print(response.content[0].text)

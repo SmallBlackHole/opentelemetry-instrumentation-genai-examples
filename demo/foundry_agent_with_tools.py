@@ -24,7 +24,7 @@ os.environ["AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED"] = "true"
 # Optional: only needed if you want to use Azure Monitor tracing
 # os.environ["AI_CONNECTION_STRING"] = "<YOUR_AI_CONNECTION_STRING>"  # Replace with your Application Insights connection string
 
-if not os.environ.get("REMOTE_TRACING"):
+if os.environ.get("REMOTE_TRACING") == "local":
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     resource = Resource(attributes={SERVICE_NAME: "foundry-agent-with-tools"})
 

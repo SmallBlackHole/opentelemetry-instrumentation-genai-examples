@@ -10,9 +10,9 @@ initialize({
 const { OpenAI } = require("openai");
 
 async function main() {
-    const client = new OpenAI();
+    const client = new OpenAI({baseURL: "http://localhost:11434/v1", apiKey: "unused"});
     const completion = await client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "phi3",
         messages: [
             {
                 role: "user",

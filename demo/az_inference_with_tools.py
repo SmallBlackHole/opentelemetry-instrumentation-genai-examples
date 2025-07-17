@@ -1,9 +1,13 @@
 # pip install azure-ai-inference[opentelemetry]
 # pip install opentelemetry azure-core-tracing-opentelemetry opentelemetry-sdk opentelemetry-exporter-otlp
 import os
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor, ConsoleSpanExporter
+# os.environ["https_proxy"] = "127.0.0.1:8888"
+import sslkeylog
+sslkeylog.set_keylog("C:/Users/aochengwang/Desktop/keylog.log")
+from opentelemetry import trace, context
+from opentelemetry.sdk.trace import ReadableSpan, Span, TracerProvider, SpanProcessor
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor, BatchSpanProcessor, ConsoleSpanExporter, SpanExportResult, SpanExporter
+from typing import Optional, Sequence
 
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage, UserMessage, CompletionsFinishReason, ImageContentItem, TextContentItem, ImageUrl, ImageDetailLevel
@@ -16,6 +20,14 @@ os.environ["AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED"] = "true"
 
 from azure.core.settings import settings
 settings.tracing_implementation = "opentelemetry"
+class MySpanProcessor(SpanExporter):
+    def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:
+        print(spans)
+        return super().export(spans)
+    def shutdown(self) -> None:
+        return super().shutdown()
+    def force_flush(self, timeout_millis: int = 30000) -> bool:
+        return super().force_flush(timeout_millis)
 
 if os.environ.get("REMOTE_TRACING") == "local":
     from opentelemetry.sdk.resources import SERVICE_NAME, Resource
@@ -73,7 +85,7 @@ def get_temperature(city: str) -> str:
     elif city == "New York City":
         return "80"
     else:
-        return "Unavailable"
+        return "100"
 
 def get_weather(city: str) -> str:
     if city == "Seattle":
@@ -81,7 +93,7 @@ def get_weather(city: str) -> str:
     elif city == "New York City":
         return "Good weather"
     else:
-        return "Unavailable"
+        return "Good"
 
 def chat_completion_with_function_call(key, endpoint):
     import json
@@ -130,7 +142,7 @@ def chat_completion_with_function_call(key, endpoint):
     client = ChatCompletionsClient(endpoint=endpoint, credential=AzureKeyCredential(key), model="gpt-4.1")
     messages = [
         SystemMessage("You are a helpful assistant."),
-        UserMessage("What is the weather in Seattle?"),
+        UserMessage("What is the weather and temperature in Seattle?"),
         # UserMessage([
         #         ImageContentItem(
         #             image_url=ImageUrl.load(
@@ -174,7 +186,8 @@ def main():
     except KeyError:
         print("Missing environment variable 'AZURE_AI_CHAT_ENDPOINT' or 'AZURE_AI_CHAT_KEY'")
         print("Set them before running this sample.")
-        exit()
+        return
+        # exit()
 
     with tracer.start_as_current_span(scenario + " (image)"):
         chat_completion_with_function_call(key, endpoint)
